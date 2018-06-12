@@ -10,12 +10,13 @@ const render = require('./view.js')
 const createIpfsEthProvider = require('./createIpfsEthProvider')
 
 const ETH_IPFS_BRIDGES = [
-  '/dns4/ipfs.lab.metamask.io/tcp/443/wss/ipfs/QmdcCVdmHsA1s69GhQZrszpnb3wmtRwv81jojAurhsH9cz',
-  '/dns4/fox.musteka.la/tcp/443/wss/ipfs/Qmc7etyUd9tEa3ZBD3LCTMDL96qcMi8cKfHEiLt5nhVdVC',
-  '/dns4/bat.musteka.la/tcp/443/wss/ipfs/QmPaBC5Lmfj7vctVxRPcKvfZds9Zk96dgjgthvg4Dgf7at',
-  '/dns4/monkey.musteka.la/tcp/443/wss/ipfs/QmZDfxSycZxaaYyrCyHdNEiip3wmxTgriPzEYETEn9Z6K3',
-  '/dns4/panda.musteka.la/tcp/443/wss/ipfs/QmUGARsthjG4EJBCrYzkuCESjn5G2akmmuawKPbZrFM3E5',
-  '/dns4/tiger.musteka.la/tcp/443/wss/ipfs/QmXFdPj3FuVpkgmNHNTFitkp4DSmVuF6HxNX6tCZr4LFz9',
+  '/dns4/monkey.kitsunet.metamask.io/tcp/443/wss/ipfs/QmYEouqLdPepu5GiVL9LLxSByvophh8XaSq8wmrXWzupu6'
+  // '/dns4/ipfs.lab.metamask.io/tcp/443/wss/ipfs/QmdcCVdmHsA1s69GhQZrszpnb3wmtRwv81jojAurhsH9cz',
+  // '/dns4/fox.musteka.la/tcp/443/wss/ipfs/Qmc7etyUd9tEa3ZBD3LCTMDL96qcMi8cKfHEiLt5nhVdVC',
+  // '/dns4/bat.musteka.la/tcp/443/wss/ipfs/QmPaBC5Lmfj7vctVxRPcKvfZds9Zk96dgjgthvg4Dgf7at',
+  // '/dns4/monkey.musteka.la/tcp/443/wss/ipfs/QmZDfxSycZxaaYyrCyHdNEiip3wmxTgriPzEYETEn9Z6K3',
+  // '/dns4/panda.musteka.la/tcp/443/wss/ipfs/QmUGARsthjG4EJBCrYzkuCESjn5G2akmmuawKPbZrFM3E5',
+  // '/dns4/tiger.musteka.la/tcp/443/wss/ipfs/QmXFdPj3FuVpkgmNHNTFitkp4DSmVuF6HxNX6tCZr4LFz9',
 ]
 
 let ipfs
@@ -37,25 +38,6 @@ createNode((err, node) => {
   }
   ipfs = node
   global.ipfs = node
-
-  global.tools = createIpfsEthProvider({ ipfs, rpcUrl: 'https://mainnet.infura.io/' })
-
-  // setup block storage
-  global.tools.blockTracker.on('block', (blockParams) => {
-    // add to ipfs
-    const blockHeader = blockHeaderFromRpc(blockParams)
-    const rawBlock = blockHeader.serialize()
-    const cid = cidFromHash('eth-block', blockHeader.hash())
-    ipfs.block.put(rawBlock, cid, function(err){
-      if (err) console.error(err)
-    })
-    // add to state
-    registerBlockAsLocal({
-      cid: cid.toBaseEncodedString(),
-      hash: blockParams.hash,
-      number: blockParams.number,
-    })
-  })
 
   // connect to bootstrap eth-ipfs bridge nodes
   ETH_IPFS_BRIDGES.map((address) => ipfs.swarm.connect(address))
@@ -84,12 +66,30 @@ function registerBlockAsLocal (block) {
 const actions = global.actions = {
   startTracker: () => {
     console.log('start rpc sync...')
-    global.tools.blockTracker.start()
+    global.tools = createIpfsEthProvider({ ipfs, rpcUrl: 'https://mainnet.infura.io/' })
+
+    // setup block storage
+    global.tools.blockTracker.on('latest', (blockParams) => {
+      // add to ipfs
+      const blockHeader = blockHeaderFromRpc(blockParams)
+      const rawBlock = blockHeader.serialize()
+      const cid = cidFromHash('eth-block', blockHeader.hash())
+      ipfs.block.put(rawBlock, cid, function (err) {
+        if (err) console.error(err)
+      })
+      // add to state
+      registerBlockAsLocal({
+        cid: cid.toBaseEncodedString(),
+        hash: blockParams.hash,
+        number: blockParams.number,
+      })
+    })
+
     store.updateState({ isRpcSyncing: true })
   },
   stopTracker: () => {
     console.log('stop rpc sync...')
-    global.tools.blockTracker.stop()
+    delete global.tools
     store.updateState({ isRpcSyncing: false })
   },
   setPseudoQuery: (pseudoQuery) => {
