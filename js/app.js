@@ -1,5 +1,8 @@
 'use strict'
 
+require('babel-polyfill')
+
+const EthJs = require('ethjs')
 const ObsStore = require('obs-store')
 const vdom = require('./vdom')
 const render = require('./view.js')
@@ -8,7 +11,7 @@ const PeerId = require('peer-id')
 const PeerInfo = require('peer-info')
 const multiaddr = require('multiaddr')
 
-const kitsunetFactory = require('kitsunet')
+const kitsunetFactory = require('./kitsunet-provider')
 
 const store = new ObsStore({
   peerInfo: {},
@@ -27,7 +30,7 @@ const store = new ObsStore({
 run()
 async function run () {
   try {
-    const { kitsunet, providerTools } = await kitsunetFactory({
+    const { kitsunet, blockTracker, provider } = await kitsunetFactory({
       options: {
         sliceDepth: 10,
         rpcUrl: 'http://localhost:8546',
@@ -37,14 +40,15 @@ async function run () {
           '0x1d805bc00b8fa3c96ae6c8fa97b2fd24b19a9801'
         ],
         libp2pBootstrap: [
-          '/ip4/127.0.0.1/tcp/33001/ws/ipfs/QmUA1Ghihi5u3gDwEDxhbu49jU42QPbvHttZFwB6b4K5oC',
-          '/ip4/127.0.0.1/tcp/33003/ws/ipfs/QmZMmjMMP9VUyBkA6zFdEGmuFRdwjsiHZ3KtxMp89i7Xwv'
-        ]
+          '/ip4/127.0.0.1/tcp/30334/ws/ipfs/QmUA1Ghihi5u3gDwEDxhbu49jU42QPbvHttZFwB6b4K5oC'
+        ],
+        slicePath: ['8e99', '1372'],
+        dialInterval: 10000
       },
       addrs: []
     })
 
-    global.tools = providerTools
+    global.tools = { blockTracker, provider, eth: new EthJs(provider) }
     global.kitsunet = kitsunet
 
     const { rootNode, updateDom } = vdom()
@@ -54,15 +58,19 @@ async function run () {
     })
 
     store.updateState({ peerInfo: global.kitsunet.peerInfo })
-    global.tools.blockTracker.on('latest', actions.setBestBlock)
-    global.tools.sliceTracker.on('latest', (slice) => {
+    global.kitsunet.on('latest', (block) => {
+      actions.setBestBlock({
+        number: block.header.number.toString('hex'),
+        stateRoot: block.header.stateRoot.toString('hex')
+      })
+    })
+    global.kitsunet.sliceManager.on('latest', (slice) => {
       const { slices } = store.getState()
       slices.add(slice.sliceId)
       store.updateState({ slices })
     })
 
-    global.kitsunet.kitsunetPeer.on('kitsunet:connect', updatePeerList)
-    global.kitsunet.kitsunetPeer.on('kitsunet:disconnect', updatePeerList)
+    setInterval(updatePeerList, 1000)
   } catch (error) {
     console.error(error)
     onError(error)
@@ -105,22 +113,22 @@ const actions = global.actions = {
 
     // gnosis
     const tokenABI = [{
-      'constant': true,
-      'inputs': [
+      constant: true,
+      inputs: [
         {
-          'name': '_owner',
-          'type': 'address'
+          name: '_owner',
+          type: 'address'
         }
       ],
-      'name': 'balanceOf',
-      'outputs': [
+      name: 'balanceOf',
+      outputs: [
         {
-          'name': 'balance',
-          'type': 'uint256'
+          name: 'balance',
+          type: 'uint256'
         }
       ],
-      'payable': false,
-      'type': 'function'
+      payable: false,
+      type: 'function'
     }]
 
     try {
@@ -169,7 +177,7 @@ const actions = global.actions = {
 // Get peers from IPFS and display them
 function updatePeerList () {
   store.updateState({
-    peers: Array.from(global.kitsunet.kitsunetPeer.connected.values())
+    peers: (Array.from(global.kitsunet.peers.values())).map(p => p.peerInfo)
   })
 }
 

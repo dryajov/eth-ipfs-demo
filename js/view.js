@@ -1,3 +1,5 @@
+'use strict'
+
 const h = require('virtual-dom/virtual-hyperscript')
 
 module.exports = render
@@ -9,19 +11,19 @@ function render (state, actions) {
 
       h('div.header', [
         h('a', {
-          'attributes': {
-            'href': 'https://musteka.la',
-            'target': '_blank'
+          attributes: {
+            href: 'https://musteka.la',
+            target: '_blank'
           }
         }, [
           h('img#logo', {
-            'attributes': {
-              'src': 'mustekala.svg',
-              'height': '32'
+            attributes: {
+              src: 'mustekala.svg',
+              height: '32'
             },
-            'id': {
-              'name': 'id',
-              'value': 'logo'
+            id: {
+              name: 'id',
+              value: 'logo'
             }
           })
         ])
@@ -38,9 +40,9 @@ function render (state, actions) {
             state.bestBlock ? renderBlock(state.bestBlock) : h('div', '(none)'),
 
             h('button#start', {
-              'attributes': {
-                'type': 'button',
-                'disabled': !state.isRpcSyncing ? undefined : true
+              attributes: {
+                type: 'button',
+                disabled: !state.isRpcSyncing ? undefined : true
               },
               onclick: actions.startTracker
             }, `Start`),
@@ -72,17 +74,17 @@ function render (state, actions) {
 
             // balance
             h('input#kitsunet-balance', {
-              'attributes': {
-                'type': 'text',
-                'placeholder': 'balance lookup',
-                'value': state.account
+              attributes: {
+                type: 'text',
+                placeholder: 'balance lookup',
+                value: state.account
               }
             }),
 
             h('button', {
-              'attributes': {
-                'disabled': state.bestBlock ? undefined : true,
-                'type': 'button'
+              attributes: {
+                disabled: state.bestBlock ? undefined : true,
+                type: 'button'
               },
               onclick: (event) => {
                 const input = document.querySelector('#kitsunet-balance')
@@ -108,19 +110,19 @@ function render (state, actions) {
 
             // token holder address
             h('input#token-query', {
-              'attributes': {
-                'type': 'text',
-                'placeholder': 'eth-kitsunet pseudo path',
-                'value': state.tokenHolder
+              attributes: {
+                type: 'text',
+                placeholder: 'eth-kitsunet pseudo path',
+                value: state.tokenHolder
               },
               oninput: (event) => actions.setTokenHolder(event.target.value)
             }),
 
             // initiate lookup
             h('button', {
-              'attributes': {
-                'disabled': state.bestBlock ? undefined : true,
-                'type': 'button'
+              attributes: {
+                disabled: state.bestBlock ? undefined : true,
+                type: 'button'
               },
               onclick: actions.lookupTokenBalance
             }, `Lookup Gnosis Balance`),
@@ -175,10 +177,10 @@ function render (state, actions) {
             ]),
             h('div', [
               h('input.connect-peer', {
-                'attributes': {
-                  'disabled': state.peerInfo.multiaddrs && state.peerInfo.multiaddrs.size > 0 ? undefined : true,
-                  'type': 'text',
-                  'placeholder': 'Multiaddr'
+                attributes: {
+                  disabled: state.peerInfo.multiaddrs && state.peerInfo.multiaddrs.size > 0 ? undefined : true,
+                  type: 'text',
+                  placeholder: 'Multiaddr'
                 }
               }),
               `
@@ -203,6 +205,6 @@ function render (state, actions) {
 }
 
 function renderBlock (block) {
-  const number = parseInt(block.number)
+  const number = parseInt(block.number, 16)
   return h('div', `block: #${number}, stateRoot: ${block.stateRoot}`)
 }

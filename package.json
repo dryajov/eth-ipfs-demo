@@ -2,22 +2,30 @@
   "name": "eth-kitsunet-demo",
   "version": "1.0.0",
   "scripts": {
-    "start": "npx beefy js/app.js:bundle.js --live --open",
+    "start": "npx beefy js/app.js:bundle.js --open",
     "build": "npx browserify js/app.js -o bundle.js"
   },
   "license": "MIT",
   "dependencies": {
+    "babel-polyfill": "^6.26.0",
+    "eth-json-rpc-kitsunet-slice": "github:musteka-la/eth-json-rpc-kitsunet-slice#mvp/rework",
+    "eth-json-rpc-middleware": "^3.1.6",
+    "eth-query": "^2.1.2",
     "ethereumjs-util": "^6.0.0",
-    "kitsunet": "github:dryajov/kitsunet-js.git#master",
+    "ethjs": "^0.4.0",
+    "json-rpc-engine": "^5.0.0",
+    "kitsunet-block-tracker": "github:musteka-la/kitsunet-block-tracker#master",
     "multiaddr": "^5.0.0",
-    "obs-store": "^2.3.2",
+    "obs-store": "^4.0.2",
     "peer-id": "^0.12.0",
     "peer-info": "^0.14.1",
-    "pify": "^4.0.1",
+    "promisify-this": "^2.0.2",
     "pull-stream": "^3.6.0",
     "virtual-dom": "^2.1.1"
   },
   "devDependencies": {
+    "@babel/core": "^7.4.0",
+    "babelify": "^10.0.0",
     "beefy": "^2.1.8",
     "browserify": "^16.2.3",
     "patch-package": "^5.1.1"

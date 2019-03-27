@@ -1,3 +1,5 @@
+'use strict'
+
 const h = require('virtual-dom/h')
 const diff = require('virtual-dom/diff')
 const patch = require('virtual-dom/patch')
