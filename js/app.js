@@ -7,8 +7,9 @@ const ObsStore = require('obs-store')
 const vdom = require('./vdom')
 const render = require('./view.js')
 
-const PeerId = require('peer-id')
-const PeerInfo = require('peer-info')
+const promisify = require('promisify-this')
+const PeerId = promisify(require('peer-id'), false)
+const PeerInfo = promisify(require('peer-info'), false)
 const multiaddr = require('multiaddr')
 
 const kitsunetFactory = require('./kitsunet-provider')
@@ -30,8 +31,23 @@ const store = new ObsStore({
 run()
 async function run () {
   try {
+    const id = await PeerId.create()
+    const peerInfo = await PeerInfo.create(id)
+    const clientId = peerInfo.id.toB58String()
+    const identity = id.toJSON()
+    const libp2pAddrs = [
+      // `/dns4/signaller.lab.metamask.io/tcp/443/wss/p2p-webrtc-star/ipfs/${clientId}`
+      `/ip4/127.0.0.1/tcp/9090/ws/p2p-webrtc-star/ipfs/${clientId}`
+    ]
+
+    const devMode = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
+  !window.location.search.includes('prod')
+
     const { kitsunet, blockTracker, provider } = await kitsunetFactory({
       options: {
+        identity,
+        libp2pAddrs,
+        NODE_ENV: devMode ? 'dev' : 'prod',
         sliceDepth: 10,
         rpcUrl: 'http://localhost:8546',
         ethAddrs: [
@@ -40,7 +56,7 @@ async function run () {
           '0x1d805bc00b8fa3c96ae6c8fa97b2fd24b19a9801'
         ],
         libp2pBootstrap: [
-          '/ip4/127.0.0.1/tcp/30334/ws/ipfs/QmUA1Ghihi5u3gDwEDxhbu49jU42QPbvHttZFwB6b4K5oC'
+          // '/ip4/127.0.0.1/tcp/30334/ws/ipfs/QmUA1Ghihi5u3gDwEDxhbu49jU42QPbvHttZFwB6b4K5oC'
         ],
         slicePath: ['8e99', '1372'],
         dialInterval: 10000

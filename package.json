@@ -2,7 +2,7 @@
   "name": "eth-kitsunet-demo",
   "version": "1.0.0",
   "scripts": {
-    "start": "npx beefy js/app.js:bundle.js --open",
+    "start": "npx beefy js/app.js:bundle.js 9091 --open",
     "build": "npx browserify js/app.js -o bundle.js"
   },
   "license": "MIT",
@@ -14,6 +14,7 @@
     "ethereumjs-util": "^6.0.0",
     "ethjs": "^0.4.0",
     "json-rpc-engine": "^5.0.0",
+    "kitsunet": "github:musteka-la/kitsunet-js#feat/v1",
     "kitsunet-block-tracker": "github:musteka-la/kitsunet-block-tracker#master",
     "multiaddr": "^5.0.0",
     "obs-store": "^4.0.2",
