@@ -56,9 +56,12 @@ async function run () {
           '0x1d805bc00b8fa3c96ae6c8fa97b2fd24b19a9801'
         ],
         libp2pBootstrap: [
-          // '/ip4/127.0.0.1/tcp/30334/ws/ipfs/QmUA1Ghihi5u3gDwEDxhbu49jU42QPbvHttZFwB6b4K5oC'
+          '/ip4/127.0.0.1/tcp/30334/ws/ipfs/QmUA1Ghihi5u3gDwEDxhbu49jU42QPbvHttZFwB6b4K5oC'
         ],
-        slicePath: ['8e99', '1372'],
+        slicePath: [
+          '8e99',
+          '1372'
+        ],
         dialInterval: 10000
       },
       addrs: []
@@ -80,9 +83,9 @@ async function run () {
         stateRoot: block.header.stateRoot.toString('hex')
       })
     })
-    global.kitsunet.sliceManager.on('latest', (slice) => {
+    global.kitsunet.on('slice', (slice) => {
       const { slices } = store.getState()
-      slices.add(slice.sliceId)
+      slices.add(slice.id)
       store.updateState({ slices })
     })
 

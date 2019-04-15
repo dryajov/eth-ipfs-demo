@@ -2,7 +2,7 @@
   "name": "eth-kitsunet-demo",
   "version": "1.0.0",
   "scripts": {
-    "start": "npx beefy js/app.js:bundle.js 9091 --open",
+    "start": "npx budo js/app.js:bundle.js -H 127.0.0.1 -p 9091 --open",
     "build": "npx browserify js/app.js -o bundle.js"
   },
   "license": "MIT",
@@ -27,8 +27,8 @@
   "devDependencies": {
     "@babel/core": "^7.4.0",
     "babelify": "^10.0.0",
-    "beefy": "^2.1.8",
     "browserify": "^16.2.3",
+    "budo": "^11.6.2",
     "patch-package": "^5.1.1"
   }
 }
